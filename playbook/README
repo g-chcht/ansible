@@ -1,0 +1,5 @@
+ref:
+https://docs.ansible.com/ansible/latest/collections/community/general/proxmox_module.html#ansible-collections-community-general-proxmox-module
+
+export password :
+export PROXMOX_PASSWORD=xxx
