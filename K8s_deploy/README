@@ -3,3 +3,8 @@ https://docs.ansible.com/ansible/latest/collections/community/general/proxmox_mo
 
 export password :
 export PROXMOX_PASSWORD=xxx
+export ANSIBLE_CONTAINER_PASSWORD=123456
+export ANSIBLE_HOST_KEY_CHECKING=False
+
+ansible-playbook create_infra.yml
+ansible-playbook -u root -i production deploy_k8s.yml -v

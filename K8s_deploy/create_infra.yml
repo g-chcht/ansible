@@ -1,0 +1,47 @@
+- name: Deploy K8s arch
+  hosts: hypervisor
+  remote_user: proxmoxadmin
+
+  tasks:
+  - name: Create nodes for K8s cluster
+    debug:
+      msg: "'{{ lookup('env', 'HOME') }}' is the HOME environment variable."
+      msg: "{{ lookup('pipe', 'hostname') }}"
+  - name: Create new container for K8s
+    community.general.proxmox:
+      api_user: 'proxmoxadmin@pam'
+      api_password: "{{ lookup('env', 'PROXMOX_PASSWORD') }}"
+      api_host: localhost
+      node: Proxmox-VE
+      vmid : "{{ item.vmid }}"
+      hostname: "{{ item.hostname }}"
+      ostemplate: 'local:vztmpl/debian-10-standard_10.5-1_amd64.tar.gz'
+      password: "{{ lookup('env', 'ANSIBLE_CONTAINER_PASSWORD') }}"
+      pubkey: "{{ lookup('pipe', 'cat ~/.ssh/id_rsa.pub') }}"
+      cores: 2
+      cpus: 1
+      memory: "{{ item.vmid }}"
+      description: 'container for kubernetes master'
+      disk: '8'
+      netif: '{"net0":"name=eth0,gw=192.168.0.254,ip=192.168.0.{{ item.ip }}/24,bridge=vmbr1"}'
+      storage: 'data'
+      unprivileged: yes
+    loop:
+      - { vmid: 500, hostname: 'k8smaster1', ip: '100', memory: 2048 }
+      - { vmid: 501, hostname: 'k8sworker1', ip: '101', memory: 1024 }
+      - { vmid: 502, hostname: 'k8sworker2', ip: '102', memory: 1024 }
+      - { vmid: 503, hostname: 'k8setcd1', ip: '103', memory: 1024 }
+  - name: Start Containers
+    community.general.proxmox:
+      api_user: 'proxmoxadmin@pam'
+      api_password: "{{ lookup('env', 'PROXMOX_PASSWORD') }}"
+      api_host: localhost
+      vmid : "{{ item.vmid }}"
+      state: 'started'
+    loop:
+      - { vmid: 500}
+      - { vmid: 501}
+      - { vmid: 502}
+      - { vmid: 503}
+
+
